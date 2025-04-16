@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Certificate Sharing</title>
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: #f5f5f5;
+    color: #333;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80');
+    background-size: cover;
+    background-attachment: fixed;
+    animation: fadeIn 1s;
+  }
+  .container {
+    max-width: 900px;
+    margin: 40px auto;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(15px);
+  }
+  h1 {
+    color: #2c3e50;
+    text-align: center;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+    font-size: 2.8rem;
+    margin-bottom: 30px;
+  }
+  .upload-section {
+    margin-bottom: 40px;
+    padding: 25px;
+    border: 2px dashed #3498db;
+    border-radius: 12px;
+    background: #f0f8ff;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  input,
+  button {
+    padding: 12px;
+    border: 1px solid #3498db;
+    border-radius: 8px;
+    font-size: 18px;
+    transition: box-shadow 0.3s ease;
+  }
+  input:focus,
+  button:focus {
+    outline: none;
+    box-shadow: 0 0 8px #3498db;
+  }
+  button {
+    background-color: #3498db;
+    color: white;
+    cursor: pointer;
+    border: none;
+    font-weight: 600;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  button:hover {
+    background-color: #1c598a;
+    transform: scale(1.05);
+  }
+  #sectionButtons {
+    margin-bottom: 20px;
+  }
+  .section-btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    margin-right: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  .section-btn:hover {
+    background-color: #1c598a;
+    transform: scale(1.05);
+  }
+  .section-btn.active {
+    background-color: #1c598a;
+  }
+  #certificateList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+  }
+  .certificate-item {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.2s;
+  }
+  .certificate-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  }
+  .cert-preview {
+    cursor: pointer;
+    text-align: center;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+  .cert-preview:hover {
+    transform: scale(1.05);
+  }
+  .cert-preview img {
+    max-width: 100%;
+    height: 160px;
+    object-fit: cover;
+    margin-bottom: 5px;
+    border-radius: 12px 12px 0 0;
+    border: 2px solid #2980b9;
+    box-shadow: 0 2px 6px rgba(41, 128, 185, 0.4);
+  }
+  .pdf-icon,
+  .file-icon {
+    width: 160px;
+    height: 160px;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: white;
+    border-radius: 12px 12px 0 0;
+  }
+  .pdf-icon {
+    background-color: #e74c3c;
+  }
+  .file-icon {
+    background-color: #3498db;
+  }
+  .certificate-item button {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 0 0 12px 12px;
+    border: none;
+    background-color: #2980b9;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  .certificate-item button:hover {
+    background-color: #1c598a;
+    transform: scale(1.05);
+  }
+  .preview-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    max-width: 90%;
+    max-height: 90%;
+    overflow: auto;
+    position: relative;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  }
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 32px;
+    cursor: pointer;
+    color: #333;
+    font-weight: bold;
+  }
+  .modal-actions {
+    margin-top: 20px;
+    text-align: center;
+  }
+  .download-btn {
+    padding: 12px 24px;
+    background-color: #3498db;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Certificate Sharing</h1>
+
+    <div class="upload-section">
+      <h2>Upload Certificate</h2>
+      <form id="uploadForm">
+        <input type="password" id="password" placeholder="Enter password" required />
+        <input type="text" id="section" placeholder="Enter section (e.g. Machine Learning)" required />
+        <input type="file" id="certificate" accept=".pdf,.jpg,.jpeg,.png" required />
+        <button type="submit">Upload Certificate</button>
+      </form>
+    </div>
+
+    <div class="section-buttons" id="sectionButtons" style="margin-bottom: 20px;">
+      <!-- Section buttons will be dynamically added here -->
+    </div>
+    <div class="certificates">
+      <h2>Shared Certificates</h2>
+      <div id="certificateList">
+        <!-- Certificates will appear here -->
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+  <script>
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
+
+    document.getElementById('uploadForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const password = document.getElementById('password').value;
+      const section = document.getElementById('section').value.trim();
+      const fileInput = document.getElementById('certificate');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert('Please select a file to upload.');
+        return;
+      }
+      if (!section) {
+        alert('Please enter a section.');
+        return;
+      }
+
+      if (password !== 'suru123') {
+        alert('Incorrect password. You cannot upload the certificate.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async function (e) {
+        const certificates = JSON.parse(localStorage.getItem('certificates') || '[]');
+        let dataUrl = e.target.result;
+
+        if (file.type === 'application/pdf') {
+          // Convert first page of PDF to image
+          const imgDataUrl = await pdfToImage(dataUrl);
+          certificates.push({
+            name: file.name,
+            data: dataUrl,
+            thumbnail: imgDataUrl,
+            isPdf: true,
+            section: section,
+          });
+        } else {
+          certificates.push({
+            name: file.name,
+            data: dataUrl,
+            thumbnail: dataUrl,
+            isPdf: false,
+            section: section,
+          });
+        }
+        localStorage.setItem('certificates', JSON.stringify(certificates));
+        alert('Certificate uploaded successfully!');
+        loadCertificates();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    async function pdfToImage(pdfDataUrl) {
+      const loadingTask = pdfjsLib.getDocument({
+        data: atob(pdfDataUrl.split(',')[1]),
+      });
+      const pdf = await loadingTask.promise;
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 1 });
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      await page.render({ canvasContext: context, viewport: viewport }).promise;
+      return canvas.toDataURL();
+    }
+
+    function loadCertificates() {
+      const certificates = JSON.parse(localStorage.getItem('certificates') || '[]');
+      const certificateList = document.getElementById('certificateList');
+      certificateList.innerHTML = '';
+
+      // Group certificates by section
+      const sections = {};
+      certificates.forEach((cert) => {
+        if (!sections[cert.section]) {
+          sections[cert.section] = [];
+        }
+        sections[cert.section].push(cert);
+      });
+
+      for (const [section, certs] of Object.entries(sections)) {
+        const sectionDiv = document.createElement('div');
+        sectionDiv.className = 'certificate-section';
+
+        const sectionTitle = document.createElement('h3');
+        sectionTitle.textContent = section;
+        sectionTitle.className = 'section-title';
+        sectionDiv.appendChild(sectionTitle);
+
+        const sectionList = document.createElement('div');
+        sectionList.className = 'section-list';
+
+        certs.forEach((cert) => {
+          const item = document.createElement('div');
+          item.className = 'certificate-item';
+          const thumbnail = cert.thumbnail || cert.data;
+          if (cert.isPdf) {
+            item.innerHTML = `
+                                    <div class="cert-preview" onclick="showPdfPreview('${cert.data}', '${cert.name}')">
+                                        <img src="${thumbnail}" alt="${cert.name}" />
+                                        <p>${cert.name}</p>
+                                    </div>
+                                    <button onclick="downloadFile('${cert.data}', '${cert.name}')">Download</button>
+                                    <button onclick="deleteFile('${cert.name}')">Delete</button>
+                                `;
+          } else if (cert.name.match(/\.(jpg|jpeg|png)$/i)) {
+            item.innerHTML = `
+                                    <div class="cert-preview" onclick="openPreview('${cert.data}')">
+                                        <img src="${thumbnail}" alt="${cert.name}" />
+                                        <p>${cert.name}</p>
+                                    </div>
+                                    <button onclick="downloadFile('${cert.data}', '${cert.name}')">Download</button>
+                                    <button onclick="deleteFile('${cert.name}')">Delete</button>
+                                `;
+          } else {
+            item.innerHTML = `
+                                    <div class="cert-preview" onclick="window.open('${cert.data}')">
+                                        <div class="file-icon">FILE</div>
+                                        <p>${cert.name}</p>
+                                    </div>
+                                    <button onclick="downloadFile('${cert.data}', '${cert.name}')">Download</button>
+                                    <button onclick="deleteFile('${cert.name}')">Delete</button>
+                                `;
+          }
+          sectionList.appendChild(item);
+        });
+
+        sectionDiv.appendChild(sectionList);
+        certificateList.appendChild(sectionDiv);
+      }
+
+      // Add section filter buttons
+      addSectionButtons(Object.keys(sections));
+    }
+
+    function addSectionButtons(sections) {
+      const sectionButtonsDiv = document.getElementById('sectionButtons');
+      sectionButtonsDiv.innerHTML = '';
+
+      // Add "All" button
+      const allBtn = document.createElement('button');
+      allBtn.textContent = 'All';
+      allBtn.onclick = () => filterBySection(null);
+      allBtn.className = 'section-btn active';
+      sectionButtonsDiv.appendChild(allBtn);
+
+      sections.forEach((section) => {
+        const btn = document.createElement('button');
+        btn.textContent = section;
+        btn.className = 'section-btn';
+        btn.onclick = () => filterBySection(section);
+        sectionButtonsDiv.appendChild(btn);
+      });
+    }
+
+    function filterBySection(section) {
+      const certificateList = document.getElementById('certificateList');
+      const sectionsDivs = certificateList.querySelectorAll('.certificate-section');
+      sectionsDivs.forEach((div) => {
+        if (!section || div.querySelector('.section-title').textContent === section) {
+          div.style.display = 'block';
+        } else {
+          div.style.display = 'none';
+        }
+      });
+
+      // Update active button style
+      const buttons = document.querySelectorAll('.section-btn');
+      buttons.forEach((btn) => {
+        if (btn.textContent === (section || 'All')) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    function openPreview(dataUrl) {
+      const win = window.open('', '_blank');
+      win.document.write(`<img src="${dataUrl}" style="max-width:100%" />`);
+    }
+
+    function showPdfPreview(dataUrl, fileName) {
+      const modal = document.createElement('div');
+      modal.className = 'preview-modal';
+      modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close-btn" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                    <h3>${fileName}</h3>
+                    <embed src="${dataUrl}" type="application/pdf" width="100%" height="600px" />
+                    <div class="modal-actions">
+                        <a href="${dataUrl}" download="${fileName}" class="download-btn">Download</a>
+                    </div>
+                </div>
+            `;
+      document.body.appendChild(modal);
+    }
+
+    function deleteFile(fileName) {
+      const certificates = JSON.parse(localStorage.getItem('certificates') || '[]');
+      const updatedCertificates = certificates.filter((cert) => cert.name !== fileName);
+      localStorage.setItem('certificates', JSON.stringify(updatedCertificates));
+      loadCertificates();
+    }
+
+    function downloadFile(dataUrl, fileName) {
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = fileName;
+      link.click();
+    }
+
+    // Load certificates on page load
+    loadCertificates();
+  </script>
+</body>
+</html>
